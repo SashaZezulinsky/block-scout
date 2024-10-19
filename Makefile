@@ -10,4 +10,4 @@ build:
 	go build -o build/block-scout ./cmd/
 
 clean:
-	rm -rf build
+	rm -rf build *.db
