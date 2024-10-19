@@ -34,6 +34,18 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    - name: Bump Version
+      id: bump_version
+      uses: einaregilsson/semver-action@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        branch: master
+    - name: Get Version
+      id: get_version
+      run: |
+        echo "VERSION=${{ steps.bump_version.outputs.new_version }}" >> $GITHUB_ENV
     - name: Download artifacts
       uses: actions/download-artifact@v3
       with:
@@ -41,6 +53,8 @@ jobs:
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
+        tag_name: v${{ env.VERSION }}
+        release_name: "Block Scout v${{ env.VERSION }}"
         files: |
           block-scout-ubuntu-latest
           block-scout-macos-latest
