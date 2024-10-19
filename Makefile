@@ -7,4 +7,7 @@ test:
 	go test ./...
 
 build:
-	go build -o block-scout ./cmd/block-scout
+	go build -o build/block-scout ./cmd/
+
+clean:
+	rm -rf build
