@@ -51,6 +51,7 @@ go mod tidy
 To run the application, use the following command:
 
 ```bash
+export ETH_RPC_URL=https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID
 go run cmd/main.go -block <block_number> -db <path_to_database_file>
 ```
 

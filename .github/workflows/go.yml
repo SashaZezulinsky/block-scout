@@ -19,6 +19,8 @@ jobs:
       run: make lint
     - name: Run tests
       run: make test
+      env:
+       ETH_RPC_URL: ${{ secrets.RPC_URL }}
     - name: Build
       run: make build
     - name: Upload artifact
