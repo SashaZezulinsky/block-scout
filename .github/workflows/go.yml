@@ -1,0 +1,63 @@
+name: block-scout pipeline
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: 1.23
+    - name: Install dependencies
+      run: go mod tidy
+    - name: Run linter
+      run: make lint
+    - name: Run tests
+      run: make test
+      env:
+       ETH_RPC_URL: ${{ secrets.RPC_URL }}
+    - name: Build
+      run: make build
+    - name: Upload artifact
+      if: github.ref == 'refs/heads/master'
+      uses: actions/upload-artifact@v3
+      with:
+        name: block-scout-${{ matrix.os }}
+        path: block-scout
+  release:
+    if: github.ref == 'refs/heads/master'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    - name: Bump Version
+      id: bump_version
+      uses: einaregilsson/semver-action@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        branch: master
+    - name: Get Version
+      id: get_version
+      run: |
+        echo "VERSION=${{ steps.bump_version.outputs.new_version }}" >> $GITHUB_ENV
+    - name: Download artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: block-scout-ubuntu-latest
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ env.VERSION }}
+        release_name: "Block Scout v${{ env.VERSION }}"
+        files: |
+          block-scout-ubuntu-latest
+          block-scout-macos-latest
+          block-scout-windows-latest
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
